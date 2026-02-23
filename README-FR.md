@@ -1,17 +1,18 @@
 # KARUKIA MCP
 
 ```
-    ○─┬─○                              ○─┬─○
-      │   ╲       K A R U K  I A     ╱   │
-    ○─┤    ○────────────────────────○    ├─○
-      │         ≋≋  ◈ · MCP · ◈  ≋≋      │
-    ○─┴─○                              ○─┴─○
-                 Made in Guadeloupe  🇬🇵
+██╗  ██╗ █████╗ ██████╗ ██╗   ██╗██╗  ██╗    ██╗ █████╗
+██║ ██╔╝██╔══██╗██╔══██╗██║   ██║██║ ██╔╝    ██║██╔══██╗
+█████╔╝ ███████║██████╔╝██║   ██║█████╔╝     ██║███████║
+██╔═██╗ ██╔══██║██╔══██╗██║   ██║██╔═██╗     ██║██╔══██║
+██║  ██╗██║  ██║██║  ██║╚██████╔╝██║  ██╗    ██║██║  ██║
+╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝╚═╝  ╚═╝
+   Méthodologie IA pour les domaines réglementés · Made in Guadeloupe 🇬🇵
 ```
 
 **La méthodologie complète de développement assistée par IA, livrée via MCP.**
 
-**Dernière version : v1.2.4** — Avatars terminaux pour Neo & Jeffrey + enrichissements docs.
+**Dernière version : v1.2.6** — Avatars terminaux pour Neo & Jeffrey + enrichissements docs.
 
 21 outils, 11 skills, 935+ points de contrôle sécurité / qualité / pentest. Compatible avec n'importe quelle plateforme IA (Claude Code, Cursor, Windsurf, Copilot…) via le Model Context Protocol.
 
