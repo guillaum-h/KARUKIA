@@ -1,5 +1,9 @@
 # KARUKIA MCP
 
+<p align="center">
+  <img src="./KARUKIA.webp" alt="KARUKIA" width="120"/>
+</p>
+
 **The complete AI-assisted development methodology, delivered via MCP.**
 
 **Latest: v1.2.3** — Enriched context.json v2 for reliable inter-skill communication.
@@ -224,13 +228,25 @@ Your AI calls `auto` — analyzes the request — routes to the right skill(s) �
 
 ## Cloud / Enterprise
 
-KARUKIA runs locally by default (stdio transport via `npx`). A remote HTTP transport is also available for enterprise deployments — hosted on your own infrastructure, accessible via API with bearer authentication.
+KARUKIA runs locally by default (stdio via `npx`). Free, zero infrastructure.
 
-Interested in a managed KARUKIA instance for your team? Contact: **contact@karukia.com**
+**For teams** — a managed KARUKIA server (waitlist): connect your whole team via a single API key, centralized audit trail, consistent checklists across all developers.
+
+→ **contact@karukia.com** to join the waitlist.
 
 ---
 
-## About KARUKIA
+## About
+
+KARUKIA is developed by **[KARUK IA Solutions](https://karukia.com)**, a B2B SaaS studio specializing in regulated industries (healthcare, finance, pharma), based in Guadeloupe. 🇬🇵
+
+Built from direct experience with HDS 2.0 / ISO 27001 certification in the French healthcare sector. The methodology was made open to share what a real certification process actually requires — not just theory.
+
+> *Made in Guadeloupe — AI doesn't replace the expert, it frees them.*
+
+---
+
+## Why KARUKIA
 
 KARUKIA is a structured AI-assisted development methodology built around three principles:
 

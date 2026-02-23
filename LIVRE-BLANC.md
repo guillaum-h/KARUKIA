@@ -1,41 +1,45 @@
 # KARUKIA — Livre Blanc
 
-**Methodologie de developpement assistee par IA : securite, qualite et pentest via le protocole MCP.**
+**Méthodologie de développement assistée par IA : sécurité, qualité et pentest via le protocole MCP.**
 
-*Document en francais. English version: [WHITEPAPER.md](./WHITEPAPER.md)*
+*Document en français. English version: [WHITEPAPER.md](./WHITEPAPER.md)*
+
+<p align="center">
+  <img src="./KARUKIA.webp" alt="KARUKIA" width="120"/>
+</p>
 
 ---
 
-## 1. Le probleme
+## 1. Le problème
 
-Les assistants IA (Claude, GPT, Copilot) sont puissants mais generiques. Quand on demande un audit de securite, l'IA improvise : elle connait les concepts OWASP mais ne suit pas une methodologie structuree. Le resultat varie d'une session a l'autre, sans exhaustivite garantie.
+Les assistants IA (Claude, GPT, Copilot) sont puissants mais génériques. Quand on demande un audit de sécurité, l'IA improvise : elle connaît les concepts OWASP mais ne suit pas une méthodologie structurée. Le résultat varie d'une session à l'autre, sans exhaustivité garantie.
 
-**Consequences concretes :**
+**Conséquences concrètes :**
 
-- Des vulnerabilites passent entre les mailles parce que l'IA "oublie" de verifier certains points
-- Aucune tracabilite : impossible de prouver qu'un controle a ete effectue
-- Pas de reproductibilite : deux audits du meme code donnent des resultats differents
-- Zero conformite : les frameworks (ISO 27001, SOC 2, HDS) exigent des preuves formelles
+- Des vulnérabilités passent entre les mailles parce que l'IA « oublie » de vérifier certains points
+- Aucune traçabilité : impossible de prouver qu'un contrôle a été effectué
+- Pas de reproductibilité : deux audits du même code donnent des résultats différents
+- Zéro conformité : les frameworks (ISO 27001, SOC 2, HDS) exigent des preuves formelles
 
 ## 2. La solution KARUKIA
 
-KARUKIA transforme le probleme en injectant une **methodologie complete** directement dans le contexte de l'IA, a la demande.
+KARUKIA transforme le problème en injectant une **méthodologie complète** directement dans le contexte de l'IA, à la demande.
 
-### Comment ca marche
+### Comment ça marche
 
-KARUKIA est un serveur MCP (Model Context Protocol) — le standard ouvert d'Anthropic pour connecter des outils a une IA. Quand l'utilisateur demande un audit, le serveur MCP retourne un **prompt monolithique** contenant :
+KARUKIA est un serveur MCP (Model Context Protocol) — le standard ouvert d'Anthropic pour connecter des outils à une IA. Quand l'utilisateur demande un audit, le serveur MCP retourne un **prompt monolithique** contenant :
 
-1. **L'identite du persona** — nom, expertise, style de communication
-2. **Le workflow** — etapes obligatoires, dans l'ordre, avec gates de validation
-3. **Les checklists** — tous les points de controle pertinents, inline dans le prompt
+1. **L'identité du persona** — nom, expertise, style de communication
+2. **Le workflow** — étapes obligatoires, dans l'ordre, avec gates de validation
+3. **Les checklists** — tous les points de contrôle pertinents, inline dans le prompt
 4. **Les templates** — format de sortie attendu (tables, scores, verdicts)
-5. **Les garde-fous** — regles non-negociables (ex: "chaque finding doit citer file:line")
+5. **Les garde-fous** — règles non-négociables (ex. : « chaque finding doit citer fichier:ligne »)
 
-L'IA recoit ce prompt et **devient** le specialiste pour la duree de la session. Elle ne peut pas "oublier" un controle — il est ecrit dans son contexte.
+L'IA reçoit ce prompt et **devient** le spécialiste pour la durée de la session. Elle ne peut pas « oublier » un contrôle — il est écrit dans son contexte.
 
 ### Le protocole MCP
 
-Le [Model Context Protocol](https://modelcontextprotocol.io/) est un standard ouvert qui permet a n'importe quel client IA de se connecter a des serveurs d'outils. KARUKIA fonctionne avec :
+Le [Model Context Protocol](https://modelcontextprotocol.io/) est un standard ouvert qui permet à n'importe quel client IA de se connecter à des serveurs d'outils. KARUKIA fonctionne avec :
 
 - **Claude Code** (CLI)
 - **Claude Desktop**
@@ -49,139 +53,143 @@ L'installation se fait en une ligne :
 npx karukia-mcp
 ```
 
-Aucun compte, aucune cle API, aucune donnee envoyee a l'exterieur. Le serveur tourne en local sur la machine du developpeur.
+Aucun compte, aucune clé API, aucune donnée envoyée à l'extérieur. Le serveur tourne en local sur la machine du développeur.
 
 ---
 
 ## 3. Architecture
 
-### Transport local (par defaut)
+### Transport local (par défaut)
 
 ```
-Developpeur <-> Client IA <-> [stdio] <-> KARUKIA MCP Server (local)
+Développeur <-> Client IA <-> [stdio] <-> KARUKIA MCP Server (local)
                                               |
                                               ├── 11 skills (prompt builders)
                                               ├── 24 checklists (935+ points)
-                                              └── Systeme de memoire (sessions, knowledge)
+                                              └── Système de mémoire (sessions, knowledge)
 ```
 
-Le serveur communique via **stdio** (entree/sortie standard). Aucun port reseau ouvert, aucun appel HTTP. Tout reste sur la machine locale.
+Le serveur communique via **stdio** (entrée/sortie standard). Aucun port réseau ouvert, aucun appel HTTP. Tout reste sur la machine locale.
 
-### Transport distant (entreprise)
+### Transport distant (équipe)
 
 ```
-Equipe <-> Clients IA <-> [HTTPS] <-> KARUKIA MCP Server (Cloud Run)
+Équipe <-> Clients IA <-> [HTTPS] <-> KARUKIA MCP Server (géré)
                                           |
                                           ├── Auth bearer (MCP_API_KEY)
                                           ├── Rate limiting par session
                                           ├── Audit trail (Pino logs)
-                                          └── Meme moteur, memes checklists
+                                          └── Même moteur, mêmes checklists
 ```
 
-Pour les deploiements en equipe, KARUKIA supporte un transport **HTTP streamable** deployable sur votre propre infrastructure (Cloud Run, Kubernetes, VM). Authentification par bearer token, logs structures, rate limiting.
+Pour les équipes, KARUKIA propose un serveur géré accessible via clé API. Ce mode est en cours de développement — **liste d'attente ouverte** sur contact@karukia.com.
 
 ### Ce que le serveur retourne
 
-Chaque tool MCP retourne un **prompt monolithique** — un seul bloc de texte contenant tout ce dont l'IA a besoin. Pas de chaines d'appels, pas de RAG, pas de base vectorielle. Juste un prompt bien construit.
+Chaque tool MCP retourne un **prompt monolithique** — un seul bloc de texte contenant tout ce dont l'IA a besoin. Pas de chaînes d'appels, pas de RAG, pas de base vectorielle. Juste un prompt bien construit.
 
-Exemple simplifie pour `neo` (audit securite) :
+Exemple simplifié pour `neo` (audit sécurité) :
 
 ```
-[GUARD v2 — obligations non-negociables]
+[GUARD v2 — obligations non-négociables]
 +
-[Persona Neo — identite, style, expertise]
+[Persona Neo — identité, style, expertise]
 +
-[Workflow — 5 etapes obligatoires]
+[Workflow — 5 étapes obligatoires]
 +
-[Checklist OWASP — 62 controles inline]
+[Checklist OWASP — 62 contrôles inline]
 +
-[Checklist ISO 27001 — 93 controles inline]
+[Checklist ISO 27001 — 93 contrôles inline]
 +
 [Template de sortie — format table + verdict]
 ```
 
-Taille typique d'un prompt skill : 15-40 KB selon les checklists actives.
+Taille typique d'un prompt skill : 15-40 Ko selon les checklists actives.
 
 ---
 
 ## 4. Les trois couches d'audit
 
-### Couche 1 — Audit defensif (Neo)
+### Couche 1 — Audit défensif (Neo)
 
-**Persona :** Neo, auditeur cybersecurite senior.
+<p align="left">
+  <img src="./neo-avatar.webp" alt="Neo" width="80"/>
+</p>
 
-**Methode :** Verification point par point de chaque controle applicable. Chaque finding doit citer le fichier et la ligne. Chaque verdict est soit CONFORME, soit NON-CONFORME avec preuve.
+**Persona :** Neo, auditeur cybersécurité senior.
 
-**Frameworks supportes :**
+**Méthode :** Vérification point par point de chaque contrôle applicable. Chaque finding doit citer le fichier et la ligne. Chaque verdict est soit CONFORME, soit NON-CONFORME avec preuve.
 
-| Framework | Points | Perimetre |
+**Frameworks supportés :**
+
+| Framework | Points | Périmètre |
 |-----------|--------|-----------|
 | OWASP Security Baseline | 62 | Toute application web |
-| HDS 2.0 | 52 | Donnees de sante (France) |
+| HDS 2.0 | 52 | Données de santé (France) |
 | ISO 27001:2022 | 93 | SMSI entreprise |
-| SOC 2 Type II | 74 | SaaS (marche US) |
+| SOC 2 Type II | 74 | SaaS (marché US) |
 | PCI-DSS v4.0 | 97 | Traitement de paiements |
-| HIPAA | 67 | Donnees de sante (US) |
+| HIPAA | 67 | Données de santé (US) |
 
-**Sortie :** Table de findings avec severite (CRITIQUE / MAJEUR / MINEUR / INFO), reference checklist, fichier:ligne, et verdict global APPROUVE ou REJETE.
+**Sortie :** Table de findings avec sévérité (CRITIQUE / MAJEUR / MINEUR / INFO), référence checklist, fichier:ligne, et verdict global APPROUVÉ ou REJETÉ.
 
-**Chaine :** Neo est systematiquement appele apres Jeffrey (implementation) pour valider la securite du code produit. Si Neo rejette, Jeffrey corrige — boucle maximum 3 iterations.
+**Chaîne :** Neo est systématiquement appelé après Jeffrey (implémentation) pour valider la sécurité du code produit. Si Neo rejette, Jeffrey corrige — boucle maximum 3 itérations.
 
-### Couche 2 — Audit qualite (Opo / Opquast)
+### Couche 2 — Audit qualité (Opo / Opquast)
 
-**Persona :** Opo, gardien de la qualite web.
+**Persona :** Opo, gardien de la qualité web.
 
-**Methode :** Verification des 245 regles Opquast v5.0 reparties en 14 categories thematiques. Deux modes :
+**Méthode :** Vérification des 245 règles Opquast v5.0 réparties en 14 catégories thématiques. Deux modes :
 
-- **opo** — Validation ciblee sur les fichiers modifies (rapide, avant merge)
-- **audit_opquast** — Audit exhaustif des 245 regles (complet, avec scoring)
+- **opo** — Validation ciblée sur les fichiers modifiés (rapide, avant merge)
+- **audit_opquast** — Audit exhaustif des 245 règles (complet, avec scoring)
 
-**Categories :** Contenus, donnees personnelles, e-commerce, formulaires, identification, images et medias, internationalisation, liens, navigation, newsletter, presentation, securite UX, serveur et performances, structure et code.
+**Catégories :** Contenus, données personnelles, e-commerce, formulaires, identification, images et médias, internationalisation, liens, navigation, newsletter, présentation, sécurité UX, serveur et performances, structure et code.
 
-**Base :** [Opquast](https://www.opquast.com/) — le referentiel francais de qualite web utilise par plus de 15 000 professionnels.
+**Base :** [Opquast](https://www.opquast.com/) — le référentiel français de qualité web utilisé par plus de 15 000 professionnels.
 
 ### Couche 3 — Audit offensif (Viper)
 
-**Persona :** V.I.P.E.R., hacker ethique certifie (OSCP, OSCE, OSWE, GWAPT).
+**Persona :** V.I.P.E.R., hacker éthique certifié (OSCP, OSCE, OSWE, GWAPT).
 
-**Methode :** Methodologie BRIGADE avec 16 agents specialises repartis en 3 phases :
+**Méthode :** Méthodologie BRIGADE avec 16 agents spécialisés répartis en 3 phases :
 
-1. **Reconnaissance** (5 agents) — Backend, frontend, config, deps, data
-2. **Surface d'attaque** (3 agents) — Matrice de controles, flux de donnees, STRIDE
-3. **Verification d'exploits** (5-6 agents) — Par categorie OWASP + cloud + supply chain
+1. **Reconnaissance** (5 agents) — Backend, frontend, config, dépendances, données
+2. **Surface d'attaque** (3 agents) — Matrice de contrôles, flux de données, STRIDE
+3. **Vérification d'exploits** (5-6 agents) — Par catégorie OWASP + cloud + supply chain
 
-**Scoring :** CVSS v4.0 pour chaque finding, mapping MITRE ATT&CK, narratifs d'attaque realistes.
+**Scoring :** CVSS v4.0 pour chaque finding, mapping MITRE ATT&CK, narratifs d'attaque réalistes.
 
 **Checklists :**
 
-| Checklist | Tests | Perimetre |
+| Checklist | Tests | Périmètre |
 |-----------|-------|-----------|
 | OWASP WSTG v5 | 100 | Pentest web |
 | Cloud Platform | 80+ | Firebase, GCP, AWS, Azure |
-| Healthcare | 50+ | PHI, chiffrement, donnees medicales |
-| Scenarios d'attaque | 15+ | Templates PTES, MITRE ATT&CK |
+| Healthcare | 50+ | PHI, chiffrement, données médicales |
+| Scénarios d'attaque | 15+ | Templates PTES, MITRE ATT&CK |
 
 ---
 
 ## 5. L'orchestrateur (Auto)
 
-L'outil `auto` est le point d'entree principal. L'utilisateur decrit sa demande en langage naturel, et l'orchestrateur :
+L'outil `auto` est le point d'entrée principal. L'utilisateur décrit sa demande en langage naturel, et l'orchestrateur :
 
-1. **Analyse** la requete (type, scope, complexite)
-2. **Route** vers la bonne chaine de skills
-3. **Gere la boucle de rejet** (si Neo rejette, Jeffrey corrige, max 3 iterations)
+1. **Analyse** la requête (type, scope, complexité)
+2. **Route** vers la bonne chaîne de skills
+3. **Gère la boucle de rejet** (si Neo rejette, Jeffrey corrige, max 3 itérations)
 4. **Consolide** le rapport final
 
 ### Table de routage
 
-| Type de demande | Chaine de skills |
+| Type de demande | Chaîne de skills |
 |----------------|-----------------|
 | Feature frontend | Jeffrey → Neo → Opo |
 | Feature backend | Jeffrey → Neo |
 | Correction de bug | Jeffrey → Neo |
-| Audit securite | Neo seul |
+| Audit sécurité | Neo seul |
 | Pentest | Viper seul |
-| Audit qualite | audit_opquast seul |
+| Audit qualité | audit_opquast seul |
 | Analyse de risques | ebios_rm_audit seul |
 | Documentation | doc_refactor seul |
 | Infrastructure | terraform_update → Neo |
@@ -190,112 +198,161 @@ L'outil `auto` est le point d'entree principal. L'utilisateur decrit sa demande 
 ### Utilisation
 
 ```
-"karukia: ajoute l'authentification utilisateur"
-    → Jeffrey implemente → Neo valide la securite → Opo verifie la qualite
+« karukia: ajoute l'authentification utilisateur »
+    → Jeffrey implémente → Neo valide la sécurité → Opo vérifie la qualité
 
-"karukia: audite la securite de mon projet"
-    → Neo audite point par point → rapport structure
+« karukia: audite la sécurité de mon projet »
+    → Neo audite point par point → rapport structuré
 
-"karukia: lance un pentest"
-    → Viper deploie 16 agents → CVSS scoring → narratifs d'attaque
+« karukia: lance un pentest »
+    → Viper déploie 16 agents → CVSS scoring → narratifs d'attaque
 ```
 
 ---
 
-## 6. Systeme de memoire
+## 6. Système de mémoire
 
-KARUKIA maintient une memoire structuree entre les sessions :
+KARUKIA maintient une mémoire structurée entre les sessions :
 
 ```
 KARUKIA/
 └── memory/
     ├── INDEX.md              — Index des sessions
-    ├── sessions/             — Une session par tache
+    ├── sessions/             — Une session par tâche
     │   └── YYYY-MM-DD_xxx/
     │       ├── task_plan.md  — Plan et objectifs
-    │       ├── findings.md   — Decouvertes
+    │       ├── findings.md   — Découvertes
     │       ├── progress.md   — Journal de progression
     │       └── context.json  — Contexte machine-readable
     ├── knowledge/
-    │   ├── patterns.md       — Patterns recurrents du projet
-    │   └── lessons.md        — Lecons apprises
+    │   ├── patterns.md       — Patterns récurrents du projet
+    │   └── lessons.md        — Leçons apprises
     └── config/
         └── security-scope.md — Frameworks et contraintes actives
 ```
 
-Cela permet a KARUKIA de **capitaliser** sur les sessions precedentes : patterns detectes, lecons apprises, decisions architecturales documentees.
+Cela permet à KARUKIA de **capitaliser** sur les sessions précédentes : patterns détectés, leçons apprises, décisions architecturales documentées.
 
 ---
 
-## 7. Cas d'usage
+## 7. Pour les secteurs réglementés
 
-### Startup SaaS — mise en conformite SOC 2
+### Le vrai coût d'une certification
 
-1. `karukia install` — detecte le stack (React + Node.js + PostgreSQL)
+Obtenir une certification HDS, ISO 27001 ou SOC 2 est coûteux — non pas parce que l'auditeur humain est incompétent, mais parce que **la documentation est absente le jour J**. Les preuves sont dispersées dans des Jira, des e-mails, des commits sans structure. Les correctifs ont été appliqués en urgence, sans traçabilité.
+
+**KARUKIA ne remplace pas l'auditeur humain. Il prépare le dossier.**
+
+### Ce que KARUKIA produit pour votre certification
+
+| Besoin de l'auditeur | Ce que KARUKIA génère |
+|----------------------|-----------------------|
+| Preuve de contrôle | Findings tracés avec référence fichier:ligne |
+| Cartographie des risques | Rapport EBIOS RM (5 ateliers ANSSI) |
+| Politique de sécurité technique | `security-scope.md` généré par `install` |
+| Conformité par framework | Rapports Neo (HDS, ISO, SOC 2, PCI-DSS…) |
+| Historique des corrections | Mémoire structurée inter-sessions |
+| Pentest documenté | Rapport Viper avec scoring CVSS v4 + MITRE ATT&CK |
+
+### Pourquoi KARUKIA est différent des autres outils
+
+| Critère | Outils d'audit génériques | KARUKIA |
+|---------|--------------------------|---------|
+| Couverture frameworks | Un framework à la fois | 6 frameworks + EBIOS RM en un seul outil |
+| Construction de preuves | Snapshots manuels | Mémoire structurée inter-sessions |
+| Cycle complet | Audit seul | Code → Sécurité → Qualité → Pentest |
+| Origine | Théorique | Né d'une vraie certification HDS/ISO 27001 |
+| Qualité web | Absente | 245 règles Opquast (référentiel français) |
+
+### Construit sur une vraie expérience
+
+KARUKIA est né de l'expérience directe de la certification HDS 2.0 et ISO 27001 dans le secteur de la santé en France. Les checklists ne sont pas théoriques — elles reflètent ce qu'un auditeur réel demande, point par point.
+
+---
+
+## 8. Cas d'usage
+
+### Startup SaaS — mise en conformité SOC 2
+
+1. `karukia install` — détecte le stack (React + Node.js + PostgreSQL)
 2. `karukia neo` avec frameworks SOC 2 + OWASP — audit complet
 3. Les findings deviennent des chantiers de durcissement
-4. `karukia jeffrey` implemente les corrections → Neo revalide
+4. `karukia jeffrey` implémente les corrections → Neo revalide
 5. Rapport exportable pour l'auditeur SOC 2
 
-### Application de sante — certification HDS
+### Application de santé — certification HDS
 
-1. `karukia install` — detecte les donnees de sante, active HDS 2.0
-2. `karukia neo` avec frameworks HDS + ISO 27001 — audit defensif
-3. `karukia viper` — pentest offensif specifique sante
+1. `karukia install` — détecte les données de santé, active HDS 2.0
+2. `karukia neo` avec frameworks HDS + ISO 27001 — audit défensif
+3. `karukia viper` — pentest offensif spécifique santé
 4. `karukia ebios_rm_audit` — analyse de risques formelle ANSSI
-5. Documentation complete pour le dossier de certification
+5. Documentation complète pour le dossier de certification
 
-### Equipe de developpement — qualite continue
+### Équipe de développement — qualité continue
 
-1. `karukia install` sur le projet partage
-2. Les developpeurs utilisent `karukia: [tache]` au quotidien
+1. `karukia install` sur le projet partagé
+2. Les développeurs utilisent `karukia: [tâche]` au quotidien
 3. Chaque feature passe par Jeffrey → Neo → Opo automatiquement
-4. Les audits complets (`neo`, `viper`, `audit_opquast`) sont lances periodiquement
+4. Les audits complets (`neo`, `viper`, `audit_opquast`) sont lancés périodiquement
 
 ---
 
-## 8. Deploiement entreprise
+## 9. Déploiement
 
-### Local (par defaut)
+### Local — Gratuit (disponible maintenant)
 
 ```bash
 npx karukia-mcp
 ```
 
-Chaque developpeur lance le serveur localement. Zero infrastructure, zero cout.
+Chaque développeur installe KARUKIA en local via `npx`. Zéro serveur, zéro infrastructure, zéro coût.
 
-### Equipe (serveur partage)
+### Équipe — Serveur géré (liste d'attente)
 
-Un serveur KARUKIA deploye sur votre infrastructure (Cloud Run, Kubernetes, VM) avec :
+Un serveur KARUKIA géré permet à toute une équipe de se connecter via une clé API unique :
 
-- **Authentification** par bearer token (`MCP_API_KEY`)
-- **Rate limiting** par session
-- **Audit trail** structure (logs Pino JSON)
-- **Checklists personnalisees** possibles
+- **Cohérence** — les mêmes checklists pour tous les développeurs
+- **Audit trail centralisé** — logs structurés Pino JSON
+- **Gestion des accès** — bearer token par équipe
+- **Disponibilité** — sans dépendance à la machine locale
 
-Contact **contact@karukia.com** pour un accompagnement deploiement.
+> Ce mode est en cours de développement. Rejoignez la liste d'attente : **contact@karukia.com**
 
 ---
 
-## 9. Comparaison
+## 10. Comparaison
 
-| Critere | IA generique | KARUKIA |
+| Critère | IA générique | KARUKIA |
 |---------|-------------|---------|
-| Methodologie | Improvisee | 935+ controles documentes |
-| Reproductibilite | Variable | Deterministe (memes checklists) |
-| Tracabilite | Aucune | Findings avec file:line |
-| Conformite | Impossible a prouver | Rapports par framework |
-| Cout | — | Gratuit (local, npm) |
-| Donnees envoyees | Selon le provider | Aucune (100% local) |
+| Méthodologie | Improvisée | 935+ contrôles documentés |
+| Reproductibilité | Variable | Déterministe (mêmes checklists) |
+| Traçabilité | Aucune | Findings avec fichier:ligne |
+| Conformité | Impossible à prouver | Rapports par framework |
+| Coût | — | Gratuit (local, npm) |
+| Données envoyées | Selon le provider | Aucune (100 % local) |
 | Installation | — | `npx karukia-mcp` |
 
 ---
 
-## 10. Licence et contact
+## 11. À propos
 
-KARUKIA MCP est **gratuit** pour un usage personnel, educatif et professionnel interne. Aucun compte requis.
+<p align="left">
+  <img src="./KARUKIA.webp" alt="KARUKIA" width="80"/>
+</p>
 
-L'usage commercial ou la revente necessitent une autorisation ecrite.
+KARUKIA est développé par **[KARUK IA Solutions](https://karukia.com)**, studio SaaS B2B spécialisé dans les domaines réglementés (santé, finance, pharma), basé en Guadeloupe. 🇬🇵
+
+La méthode KARUKIA est la méthodologie interne utilisée pour construire et certifier des produits SaaS dans des environnements HDS 2.0, ISO 27001 et RGPD. Elle est mise à disposition gratuitement pour usage personnel, éducatif et professionnel interne.
+
+> *Made in Guadeloupe — L'IA ne remplace pas l'expert, elle le libère.*
+
+---
+
+## 12. Licence et contact
+
+KARUKIA MCP est **gratuit** pour un usage personnel, éducatif et professionnel interne. Aucun compte requis.
+
+L'usage commercial ou la revente nécessitent une autorisation écrite.
 
 **Contact :** contact@karukia.com
 
