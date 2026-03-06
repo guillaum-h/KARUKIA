@@ -12,7 +12,7 @@
 
 **La méthodologie complète de développement assistée par IA, livrée via MCP.**
 
-**Dernière version : v3.0.4** — 11 dimensions d'audit, 9 nouveaux skills dimensionnels, scan global.
+**Dernière version : v3.0.5** — 11 dimensions d'audit, 9 nouveaux skills dimensionnels, scan global.
 
 26 outils, 19 skills, 1673+ points de contrôle sur 11 dimensions. Compatible avec n'importe quelle plateforme IA (Claude Code, Cursor, Windsurf, Copilot…) via le Model Context Protocol.
 
