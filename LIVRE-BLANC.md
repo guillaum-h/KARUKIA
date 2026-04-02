@@ -2,7 +2,7 @@
 
 **Méthodologie de développement assistée par IA : 11 dimensions d'audit via le protocole MCP.**
 
-*Version 3.0 — Document en français. English version: [WHITEPAPER.md](./WHITEPAPER.md)*
+*Version 3.1 — Document en français. English version: [WHITEPAPER.md](./WHITEPAPER.md)*
 
 ```
 ██╗  ██╗ █████╗ ██████╗ ██╗   ██╗██╗  ██╗    ██╗ █████╗
@@ -46,13 +46,7 @@ L'IA reçoit ce prompt et **devient** le spécialiste pour la durée de la sessi
 
 ### Le protocole MCP
 
-Le [Model Context Protocol](https://modelcontextprotocol.io/) est un standard ouvert qui permet à n'importe quel client IA de se connecter à des serveurs d'outils. KARUKIA fonctionne avec :
-
-- **Claude Code** (CLI)
-- **Claude Desktop**
-- **Cursor**
-- **Windsurf**
-- **Tout client compatible MCP**
+Le [Model Context Protocol](https://modelcontextprotocol.io/) est un standard ouvert qui permet à n'importe quel client IA de se connecter à des serveurs d'outils. KARUKIA est conçu et testé pour **Claude Code** et **OpenAI Codex**. Il est compatible avec tout client MCP (Cursor, Windsurf, Copilot, etc.).
 
 L'installation se fait en une ligne :
 
@@ -70,26 +64,22 @@ Aucun compte, aucune clé API, aucune donnée envoyée à l'extérieur. Le serve
 
 ```
 Développeur <-> Client IA <-> [stdio] <-> KARUKIA MCP Server (local)
-                                              |
-                                              ├── 20 skills (prompt builders)
-                                              ├── 22 checklists (1797+ points)
-                                              └── Système de mémoire (sessions, trackers)
+                    |                         |
+                    |                         ├── 20 skills (prompt builders)
+                    |                         ├── Blocs partagés :
+                    |                         │     GUARD + WORKFLOW + COVERAGE + AGENTS
+                    |                         ├── Abstraction plateforme (client_id) :
+                    |                         │     Claude / Codex / Generic
+                    |                         ├── 22 checklists (1800+ points)
+                    |                         └── Système de mémoire :
+                    |                               sessions/ + coverage/ + knowledge/ + trackers/
+                    |
+               Claude Code
+               OpenAI Codex
+               Tout client MCP
 ```
 
-Le serveur communique via **stdio** (entrée/sortie standard). Aucun port réseau ouvert, aucun appel HTTP. Tout reste sur la machine locale.
-
-### Transport distant (équipe)
-
-```
-Équipe <-> Clients IA <-> [HTTPS] <-> KARUKIA MCP Server (géré)
-                                          |
-                                          ├── Auth bearer (MCP_API_KEY)
-                                          ├── Rate limiting par session
-                                          ├── Audit trail (Pino logs)
-                                          └── Même moteur, mêmes checklists
-```
-
-Pour les équipes, KARUKIA supporte un transport HTTP streamable avec authentification bearer token, logs structurés et rate limiting par session.
+Le serveur communique via **stdio** (entrée/sortie standard). Aucun port réseau ouvert, aucun appel HTTP. Tout reste sur la machine locale du développeur.
 
 ### Ce que le serveur retourne
 
@@ -102,14 +92,20 @@ Exemple simplifié pour `neo` (audit sécurité) :
 +
 [Persona Neo — identité, style, expertise]
 +
-[Workflow — étapes obligatoires]
+[WORKFLOW — processus standardisé en 6 étapes]
++
+[COVERAGE — chargement du manifeste précédent, priorisation des fichiers non-scannés]
 +
 [Checklist OWASP — 62 contrôles inline]
 +
 [Checklist ISO 27001 — 93 contrôles inline]
 +
+[AGENTS — stratégie d'exploration multi-agents parallèle]
++
 [Template de sortie — format table + verdict]
 ```
+
+Les blocs WORKFLOW et COVERAGE sont nouveaux en v3.1 — ils transforment chaque audit d'un scan ponctuel en un **processus itératif et cumulatif** où aucun fichier du codebase n'est oublié.
 
 ---
 
@@ -168,7 +164,7 @@ Méthodologie BRIGADE avec 16 agents spécialisés. Scoring CVSS v4.0, mapping M
 
 ### Scan global (`karukia_scan`)
 
-Méta-orchestrateur qui lance les 11 dimensions en parallèle — 1797+ points au total. Produit un scorecard unifié, déduplique les findings, et priorise les corrections.
+Méta-orchestrateur qui lance les 11 dimensions en parallèle — 1800+ points au total. Produit un scorecard unifié, déduplique les findings, et priorise les corrections.
 
 ---
 
@@ -196,6 +192,7 @@ L'outil `auto` est le point d'entrée principal. L'utilisateur décrit sa demand
 | Performance | perf |
 | Analyse de risques | ebios_rm_audit |
 | Préparation certification | audit_expert_hds |
+| Due diligence / revue de code | deep_review |
 
 ### Utilisation
 
@@ -219,19 +216,201 @@ KARUKIA maintient une mémoire structurée entre les sessions :
 ```
 karukia/
 ├── config/
-│   └── security-scope.md     — Frameworks et contraintes actives
+│   ├── security-scope.md         — Frameworks et contraintes actives
+│   └── coverage-scopes.json      — Globs de couverture par skill (généré par install)
 ├── memory/
-│   ├── sessions/             — Une session par tâche
-│   └── references/           — Patterns, leçons, plans de durcissement
+│   ├── sessions/                 — Une session par tâche
+│   ├── coverage/                 — Manifestes de couverture (un par skill)
+│   ├── knowledge/                — Leçons apprises et patterns réutilisables
+│   └── references/               — Plans de durcissement
 └── trackers/
-    └── KARUKIA-TRACKER.json  — Tracker unifié (toutes les dimensions)
+    └── KARUKIA-TRACKER.json      — Tracker unifié (toutes les dimensions)
 ```
 
 Le `KARUKIA-TRACKER.json` trace les chantiers d'amélioration sur toutes les dimensions : sécurité, qualité, TypeScript, CSS, architecture, tests, performance et dette. Chaque skill lit et met à jour sa section automatiquement.
 
+### Communication inter-skills
+
+Les skills communiquent via `context.json` dans le répertoire de session. Quand Jeffrey implémente une feature, il écrit un contexte que Neo lit pour la validation sécurité. Quand Neo rejette, Jeffrey lit la raison du rejet et corrige. Cela permet la chaîne de validation : **Jeffrey -> Neo -> Opo** avec boucle de rejet automatique (max 3 itérations).
+
 ---
 
-## 7. Pour les secteurs réglementés
+## 7. Suivi de couverture (Nouveau en v3.1)
+
+Les audits IA traditionnels sont ponctuels : l'IA analyse ce qui tient dans sa fenêtre de contexte et s'arrête. Si votre codebase contient 300 fichiers et que l'IA en a analysé 80, vous n'avez aucun moyen de savoir quels 220 ont été oubliés -- ni de reprendre là où elle s'est arrêtée.
+
+KARUKIA v3.1 résout ce problème avec un **suivi de couverture persistant** entre les sessions.
+
+### Fonctionnement
+
+Chaque skill d'audit écrit un manifeste de couverture à la fin de chaque scan :
+
+```
+karukia/memory/coverage/{skill}-latest.json
+```
+
+Le manifeste enregistre :
+- Les fichiers analysés (avec horodatage)
+- Les fichiers restants (périmètre non couvert)
+- Le pourcentage de couverture cumulé
+- Le nombre de findings par sévérité (critique, haute, moyenne, basse)
+- Le contexte de branche git
+
+### Scan itératif
+
+```
+Scan 1 : Analyse ~40% des fichiers en périmètre  -> manifeste : 40% couvert
+Scan 2 : Lit le manifeste, saute les fichiers déjà analysés -> manifeste : 80% couvert
+Scan 3 : Traite les fichiers restants            -> manifeste : 100% COMPLET
+```
+
+Après un scan complet, KARUKIA détecte les fichiers modifiés depuis le dernier passage (via git) et ne ré-analyse que ceux-là -- zéro effort gaspillé.
+
+### Résolution du périmètre
+
+Le périmètre de couverture est résolu dans cet ordre :
+1. **Configuration projet** (`karukia/config/coverage-scopes.json`) -- générée par `install`, contient des globs adaptés au projet
+2. **Valeurs par défaut du skill** -- globs génériques (ex. : `**/*.ts` pour un audit TypeScript, `**/*.css` pour CSS)
+
+### Ce que cela signifie pour les équipes
+
+Une équipe de développement qui lance `karukia neo` chaque semaine atteint 100% de couverture du codebase en 2-3 sessions. Le manifeste de couverture fournit une **preuve auditable** de ce qui a été vérifié et quand -- exactement ce que les frameworks de conformité exigent.
+
+```
+--- COUVERTURE neo ---
+Périmètre total : 120 fichiers
+Ce scan         : 48 fichiers analysés
+Cumulé          : 96 / 120 (80%)
+Statut          : PARTIEL
+
+Restant -- le prochain scan commence par :
+  - src/auth/session.ts
+  - src/api/handlers/patient.ts
+  - ... (24 autres)
+---
+```
+
+---
+
+## 8. Workflow standardisé en 6 étapes (Nouveau en v3.1)
+
+Tous les skills d'audit suivent le même workflow structuré. Ce n'est pas un détail d'implémentation interne -- le workflow est injecté dans le prompt et appliqué par GUARD.
+
+```
+Étape 0   : PRÉPARATION         — Créer la session, charger les références et patterns
+Étape 0.5 : CHARGEMENT COUVERTURE — Lire le manifeste précédent, prioriser les fichiers non scannés
+Étape 1   : EXPLORATION          — Scan multi-agents en parallèle
+Étape 2   : ANALYSE              — Synthèse des découvertes, planification des actions
+Étape 3   : EXÉCUTION            — Exécuter le plan, mettre à jour la progression après chaque action
+Étape 4   : VALIDATION           — Lint, build, test. Corriger TOUS les problèmes avant clôture
+Étape 4.5 : ÉCRITURE COUVERTURE  — Écrire le manifeste de couverture pour la prochaine session
+Étape 5   : CLÔTURE              — Finaliser la session, mettre à jour trackers et base de connaissances
+```
+
+### Exploration multi-agents
+
+À l'étape 1, les skills déploient des agents d'exploration en parallèle, chacun couvrant un périmètre spécifique :
+
+```
+Agent 1 : Explore src/api/       ─┐
+Agent 2 : Explore src/auth/       ├── En parallèle
+Agent 3 : Explore src/services/  ─┘
+          Consolidation des résultats
+```
+
+Chaque agent retourne la liste des `files_analyzed` dans son rapport. Le contexte principal consolide toutes les listes pour le suivi de couverture.
+
+### Règle des 2 actions
+
+Après chaque 2 opérations de lecture/recherche, les findings DOIVENT être écrits dans `findings.md`. Cela garantit que même si une session est interrompue (limite de contexte, timeout, abandon utilisateur), le travail effectué est préservé.
+
+### Protocole des 3 tentatives
+
+```
+Tentative 1 : Diagnostiquer et corriger (cause racine)
+Tentative 2 : Approche alternative (JAMAIS répéter la même action)
+Tentative 3 : Repenser globalement (remettre en question les hypothèses)
+Après 3     : Escalader à l'utilisateur
+```
+
+### Persistance des connaissances
+
+À la fin de chaque session, le skill sauvegarde les apprentissages :
+- `karukia/memory/knowledge/lessons.md` -- Erreurs évitées, pièges découverts
+- `karukia/memory/knowledge/patterns.md` -- Patterns de code réutilisables (utilisés 2+ fois)
+
+La méthodologie apprend de votre codebase au fil du temps. Le deuxième audit est plus intelligent que le premier.
+
+---
+
+## 9. Deep Review -- Due Diligence Technique 12 Axes (Nouveau en v3.1)
+
+L'outil `deep_review` est une revue technique de niveau Staff Engineer sur l'ensemble d'un codebase. Il a été conçu pour trois scénarios :
+
+1. **Due diligence pré-investissement** -- Un investisseur veut savoir si le code vaut la mise
+2. **Prise de poste CTO** -- Un nouveau directeur technique a besoin d'une vision complète en une session
+3. **Planification d'un refactor majeur** -- L'équipe doit savoir où sont les vrais problèmes
+
+### Les 12 axes
+
+Deep Review déploie une brigade de 6 agents parallèles, chacun couvrant 2 axes :
+
+| Agent | Axes | Ce qu'il évalue |
+|-------|------|-----------------|
+| Agent 1 | Qualité code + Patterns IA | Fonctions >100 lignes, copier-coller, casts `any`, sur-ingénierie, code mort généré par IA |
+| Agent 2 | Architecture + Maintenabilité | Séparation des responsabilités, dépendances circulaires, patterns cohérents, magic numbers, bus factor |
+| Agent 3 | Scalabilité + Coûts | Hot spots, cold starts, O(n) sur les tenants, modélisation coût-par-tenant |
+| Agent 4 | Sécurité + Réglementaire | Chemins non authentifiés vers les données, secrets côté frontend, flux RGPD, politiques de rétention |
+| Agent 5 | Résilience + Tests | Circuit breakers, dégradation gracieuse, qualité réelle des tests (pas juste le %) |
+| Agent 6 | DX + Perf Frontend | Temps d'onboarding, scripts npm, taille du bundle, lazy loading, re-renders |
+
+### Scorecard
+
+Chaque axe est noté sur 10 avec une lettre (A+ à F). Le score global est sur 120.
+
+```
+| # | Axe               | Score /10 | Note | Red Flags | Points forts |
+|---|-------------------|-----------|------|-----------|--------------|
+| 1 | Qualité code      | 7         | B    | 3         | 5            |
+| 2 | Architecture      | 8         | A-   | 1         | 4            |
+| ...                                                                  |
+
+Score global : 84/120
+Note globale : C
+
+Top 10 Red Flags + Top 10 Points forts + Plan d'action (P0/P1/P2)
+```
+
+Le verdict final répond à une question : **"Ce code ressemble-t-il au travail d'un expert humain, ou à du code généré par IA ?"**
+
+---
+
+## 10. Support Multi-IA (Nouveau en v3.1)
+
+KARUKIA est le premier serveur MCP méthodologique avec une véritable abstraction multi-plateforme IA. Les 27 outils acceptent un paramètre optionnel `client_id` qui adapte l'intégralité du prompt.
+
+### Plateformes supportées
+
+| Plateforme | `client_id` | Statut |
+|------------|-------------|--------|
+| Claude Code | `"claude"` (défaut) | Conçu pour, entièrement testé |
+| OpenAI Codex | `"codex"` | Conçu pour, entièrement testé |
+| Tout client MCP | `"generic"` | Compatible, non testé individuellement |
+
+### Ce qui s'adapte
+
+| Aspect | Claude | Codex | Generic |
+|--------|--------|-------|---------|
+| Orchestration sous-agents | Task API avec hints Sonnet/Opus | Instructions en langage naturel | Langage naturel |
+| Fichier config généré par `install` | `CLAUDE.md` | `CODEX-PROJECT.md` | `AI-CONFIG.md` |
+| Références modèle dans les prompts | Opus (principal), Sonnet (exploration) | Noms de modèle génériques | Noms de modèle génériques |
+| Chemin des settings | `.claude/settings.json` | N/A | N/A |
+
+L'abstraction de plateforme n'est pas un simple wrapper -- elle change la façon dont les agents sont dispatchés, comment les modèles sont référencés, et comment les fichiers sont organisés. La méthodologie reste identique ; la livraison s'adapte au client.
+
+---
+
+## 11. Pour les secteurs réglementés
 
 ### Le vrai coût d'une certification
 
@@ -253,12 +432,14 @@ Obtenir une certification HDS, ISO 27001 ou SOC 2 est coûteux — non pas parce
 
 ### Pourquoi KARUKIA est différent des autres outils
 
-| Critère | Outils d'audit génériques | KARUKIA |
+| Critère | Outils d'audit génériques | KARUKIA v3.1 |
 |---------|--------------------------|---------|
 | Couverture frameworks | Un framework à la fois | 6 frameworks + EBIOS RM en un seul outil |
-| Dimensions couvertes | 1 (sécurité) | 11 (sécurité à architecture) |
+| Dimensions couvertes | 1 (sécurité) | 12 (sécurité à due diligence) |
 | Construction de preuves | Snapshots manuels | Mémoire structurée inter-sessions |
-| Cycle complet | Audit seul | Code → Sécurité → Qualité → Pentest |
+| Suivi de couverture | Aucun | Manifestes persistants, itératif jusqu'à 100% |
+| Cycle complet | Audit seul | Code -> Sécurité -> Qualité -> Pentest |
+| Due diligence technique | Manuelle | `deep_review` : 12 axes, 6 agents, scorecard A+ à F |
 | Origine | Théorique | Construit en préparant une vraie certification HDS/ISO 27001 |
 | Qualité web | Absente | 369 règles Certix (référentiel KARUKIA Solutions) |
 
@@ -268,7 +449,7 @@ KARUKIA est né du développement d'un SaaS de santé en cours de préparation p
 
 ---
 
-## 8. Cas d'usage
+## 12. Cas d'usage
 
 ### Startup SaaS — mise en conformité SOC 2
 
@@ -286,6 +467,13 @@ KARUKIA est né du développement d'un SaaS de santé en cours de préparation p
 4. `karukia ebios_rm_audit` — analyse de risques formelle ANSSI
 5. Documentation complète pour le dossier de certification
 
+### Due diligence technique — pré-investissement ou prise de poste CTO
+
+1. `karukia deep_review` -- revue complète 12 axes en une session
+2. Scorecard avec notes A+ à F par axe, score global sur 120
+3. Top 10 red flags + Top 10 points forts + plan d'action priorisé (P0/P1/P2)
+4. Verdict : "ce code ressemble-t-il au travail d'un expert ou à du code généré par IA ?"
+
 ### Équipe de développement — qualité continue
 
 1. `karukia install` sur le projet partagé
@@ -295,9 +483,9 @@ KARUKIA est né du développement d'un SaaS de santé en cours de préparation p
 
 ---
 
-## 9. Déploiement
+## 13. Déploiement
 
-### Local — Gratuit (disponible maintenant)
+### Local — Gratuit pour usage personnel (disponible maintenant)
 
 ```bash
 npx karukia-mcp
@@ -307,22 +495,26 @@ Chaque développeur installe KARUKIA en local via `npx`. Zéro serveur, zéro in
 
 ---
 
-## 10. Comparaison
+## 14. Comparaison
 
-| Critère | IA générique | KARUKIA |
+| Critère | IA générique | KARUKIA v3.1 |
 |---------|-------------|---------|
-| Méthodologie | Improvisée | 1797+ contrôles documentés |
-| Dimensions couvertes | 1 (ce qu'on demande) | 11 (sécurité à architecture) |
+| Méthodologie | Improvisée | 1800+ contrôles documentés |
+| Dimensions couvertes | 1 (ce qu'on demande) | 12 (sécurité à due diligence) |
 | Reproductibilité | Variable | Déterministe (mêmes checklists) |
 | Traçabilité | Aucune | Findings avec fichier:ligne |
+| Suivi de couverture | Aucun -- impossible de savoir ce qui a été scanné | Manifestes persistants, itératif jusqu'à 100% |
+| Continuité inter-sessions | Repart de zéro à chaque fois | Couverture + connaissances conservées |
+| Support multi-IA | Une seule plateforme | Claude, Codex, tout client MCP |
+| Due diligence | Manuelle | Revue automatisée 12 axes avec scoring |
 | Conformité | Impossible à prouver | Rapports par framework |
-| Coût | — | Gratuit (local, npm) |
+| Coût | — | Gratuit pour usage personnel (licence commerciale pour les équipes) |
 | Données envoyées | Selon le provider | Aucune (100 % local) |
 | Installation | — | `npx karukia-mcp` |
 
 ---
 
-## 11. À propos & Licence
+## 15. À propos & Licence
 
 KARUKIA est développé par **[KARUK IA Solutions](https://karukia.com)**, studio SaaS B2B spécialisé dans les domaines réglementés (santé, finance, pharma), basé en Guadeloupe. 🇬🇵
 
@@ -336,4 +528,4 @@ Pour toute utilisation commerciale, contactez **KARUKIA Solutions** — contact@
 
 **npm :** [karukia-mcp](https://www.npmjs.com/package/karukia-mcp)
 
-**GitHub :** [github.com/guillaum-h/KARUKIA](https://github.com/guillaum-h/KARUKIA)
+**GitHub :** [github.com/getkarukia/KARUKIA](https://github.com/getkarukia/KARUKIA)

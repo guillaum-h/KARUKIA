@@ -12,9 +12,9 @@
 
 **La méthodologie complète de développement assistée par IA, livrée via MCP.**
 
-**Dernière version : v3.0.6** — Référentiel CERTIX intégré (369 règles, 5 profils), 1797+ checkpoints.
+**Dernière version : v3.1.0** — 27 outils, 20 skills, 1800+ points de contrôle sur 11 dimensions d'audit. Support multi-IA.
 
-26 outils, 19 skills, 1797+ points de contrôle sur 11 dimensions. Compatible avec n'importe quelle plateforme IA (Claude Code, Cursor, Windsurf, Copilot…) via le Model Context Protocol.
+Conçu et testé pour **Claude Code** et **OpenAI Codex**. Compatible avec tout client MCP.
 
 *English version: [README.md](./README.md)*
 
@@ -29,13 +29,20 @@
 
 KARUKIA est une méthodologie de développement structurée, construite autour de personas IA spécialisés. Chaque persona (Neo pour la sécurité, Jeffrey pour l'architecture, Viper pour le pentest, Opo pour la qualité…) embarque son propre workflow, ses garde-fous et sa base de connaissances.
 
-Quand tu appelles un outil KARUKIA, le serveur MCP retourne un prompt complet — identité du persona, workflow, checklists, templates — qui transforme ton assistant IA en ce spécialiste pour la session.
+Quand tu appelles un outil KARUKIA, le serveur MCP retourne un prompt complet -- identité du persona, workflow standardisé, suivi de couverture, checklists, templates -- qui transforme ton assistant IA en ce spécialiste pour la session.
 
 ```
 Toi : « Audite la sécurité de mon projet »
-  → l'IA appelle l'outil neo
-  → le serveur MCP retourne le prompt complet de Neo + 445 contrôles inline
-  → l'IA devient Neo, suit la méthodologie, produit un rapport structuré
+  -> l'IA appelle l'outil neo
+  -> le serveur MCP retourne :
+       GUARD (obligations non-négociables)
+     + Persona Neo (identité, style, expertise)
+     + WORKFLOW (processus standardisé en 6 étapes)
+     + COVERAGE (charger le manifeste précédent, prioriser les fichiers non scannés)
+     + Checklists (445 contrôles sécurité inline)
+     + AGENTS (exploration multi-agents parallèle)
+  -> l'IA devient Neo, suit la méthodologie, produit des findings structurés
+  -> Manifeste de couverture écrit : 67% scanné -- la prochaine session reprend là où celle-ci s'est arrêtée
 ```
 
 ---
@@ -43,17 +50,18 @@ Toi : « Audite la sécurité de mon projet »
 ## Les 11 dimensions d'audit
 
 ```
-SÉCURITÉ  → Neo (445 pts)       « Mon code est-il sécurisé ? »
-QUALITÉ   → Certix (369 pts)    « Mon app est-elle bien construite ? »
-OFFENSIF  → Viper (245+ tests)  « Comment un attaquant entrerait-il ? »
-TS        → ts_quality (118)    « Mon TypeScript est-il propre ? »
-CSS       → css_quality (55)    « Mon design system est-il maintenable ? »
-ARCHI     → archi (70)          « Mon architecture est-elle saine ? »
-TESTS     → test_coverage (68)  « Est-ce que je teste les bons trucs ? »
-PERF      → perf (90)           « Où sont les goulots d'étranglement ? »
-DETTE     → debt (55)           « Qu'est-ce qui nous ralentit ? »
-HDS/ISO   → audit_expert (200+) « Suis-je prêt pour la certification ? »
-SCAN      → karukia_scan        « Lancer les 11 dimensions en parallèle »
+SÉCURITÉ      → Neo (445 pts)       « Mon code est-il sécurisé ? »
+QUALITÉ       → Certix (369 pts)    « Mon app est-elle bien construite ? »
+OFFENSIF      → Viper (245+ tests)  « Comment un attaquant entrerait-il ? »
+DUE DILIGENCE → deep_review (12 ax) « Ce codebase est-il prêt pour un investissement ? »
+TS            → ts_quality (118)    « Mon TypeScript est-il propre ? »
+CSS           → css_quality (55)    « Mon design system est-il maintenable ? »
+ARCHI         → archi (70)          « Mon architecture est-elle saine ? »
+TESTS         → test_coverage (68)  « Est-ce que je teste les bons trucs ? »
+PERF          → perf (90)           « Où sont les goulots d'étranglement ? »
+DETTE         → debt (55)           « Qu'est-ce qui nous ralentit ? »
+HDS/ISO       → audit_expert (200+) « Suis-je prêt pour la certification ? »
+SCAN          → karukia_scan        « Lancer les 11 dimensions en parallèle »
 ```
 
 ---
@@ -81,7 +89,7 @@ Crée ou édite `.mcp.json` à la racine de ton projet :
 
 ### Étape 2 — Redémarre ton client IA
 
-Redémarre Claude Code (`/quit` puis relance) ou ton IDE. Les 26 outils KARUKIA sont désormais disponibles.
+Redémarre Claude Code (`/quit` puis relance) ou ton IDE. Les 27 outils KARUKIA sont désormais disponibles.
 
 > Au premier lancement, `npx` télécharge le package automatiquement (~175 Ko). Les lancements suivants utilisent la version en cache.
 
@@ -139,7 +147,7 @@ Puis ajoute à ta config IA globale (`~/.claude.json` pour Claude Code) :
 
 ---
 
-## 26 Outils
+## 27 Outils
 
 ### Essentiels (commence ici)
 
@@ -163,6 +171,7 @@ Chaque skill retourne un prompt complet qui transforme ton IA en spécialiste.
 | `ebios_rm_audit` | Analyste Risques | Méthodologie EBIOS Risk Manager (ANSSI) — analyse formelle |
 | `security_hardening` | Planificateur Durcissement | Chantiers d'amélioration sécurité |
 | `doc_refactor` | Auditeur Doc | Audit de précision documentation vs code réel |
+| `deep_review` | Expert Due Diligence | Évaluation technique 12 axes : code, archi, scalabilité, coûts, sécurité, résilience, tests, DX, perf frontend, réglementaire, IA, maintenabilité |
 
 ### Skills dimensionnels (nouveau en v3.0)
 
@@ -174,7 +183,7 @@ Chaque skill retourne un prompt complet qui transforme ton IA en spécialiste.
 | `test_coverage` | 68 | Tests — inventaire frontend/backend, qualité échantillons |
 | `perf` | 90 | Performance — frontend, backend, build/bundle |
 | `debt` | 55 | Dette technique — code mort, dépendances, code smells |
-| `karukia_scan` | 1797+ | **Scan global** — les 11 dimensions en parallèle |
+| `karukia_scan` | 1800+ | **Scan global** — les 11 dimensions en parallèle |
 | `audit_expert_hds` | 200+ | Expert HDS 2.0/ISO 27001 — 8 domaines, préparation certification |
 | `change_report` | — | Rapport de changements ISO 27001 A.8.32 |
 
@@ -238,6 +247,74 @@ Certix est le référentiel qualité web propre à KARUKIA Solutions, conçu pou
 
 ---
 
+## Support multi-IA
+
+KARUKIA est conçu et testé pour **Claude Code** et **OpenAI Codex**. Il est compatible avec tout client MCP (Cursor, Windsurf, Copilot, etc.), mais ceux-ci n'ont pas été testés avec le paramètre `client_id`.
+
+Tous les outils de skill acceptent un paramètre optionnel `client_id` : `"claude"` (défaut), `"codex"`, ou `"generic"`. L'intégralité du prompt s'adapte :
+
+| Ce qui s'adapte | Claude (`client_id: "claude"`) | Codex (`client_id: "codex"`) | Generic |
+|---|---|---|---|
+| Orchestration sous-agents | Task API avec hints de modèle | Instructions en langage naturel | Langage naturel |
+| Fichier config généré | `CLAUDE.md` | `CODEX-PROJECT.md` | `AI-CONFIG.md` |
+| Références de modèle | Opus / Sonnet | Noms génériques | Noms génériques |
+| Racine mémoire | `karukia/` | `karukia/` | `karukia/` |
+
+Premier serveur MCP méthodologique avec une véritable abstraction multi-plateforme IA. Un seul package npm, une seule entrée `.mcp.json`, la méthodologie complète quel que soit le client IA.
+
+---
+
+## Suivi de couverture itératif (Nouveau en v3.1)
+
+Chaque skill d'audit trace les fichiers analysés entre les sessions. Aucun fichier de votre codebase n'est oublié.
+
+**Fonctionnement :**
+1. **Scan 1** -- KARUKIA analyse votre codebase, couvre ~40% des fichiers en périmètre. Écrit un manifeste de couverture dans `karukia/memory/coverage/{skill}-latest.json`.
+2. **Scan 2** -- Lit le manifeste précédent, saute les fichiers déjà analysés, couvre les ~40% suivants. Cumulé : 80%.
+3. **Scan 3** -- Traite les 20% restants. Statut : **COMPLET**.
+
+Après chaque scan, le manifeste enregistre exactement quels fichiers ont été analysés, lesquels ont été sautés, et quels findings ont été découverts -- avec le décompte par sévérité. Quand des fichiers sont modifiés après un scan complet, seuls les fichiers modifiés sont ré-analysés.
+
+```
+--- COUVERTURE neo ---
+Périmètre total : 120 fichiers
+Ce scan         : 48 fichiers analysés
+Cumulé          : 96 / 120 (80%)
+Statut          : PARTIEL
+
+Restant -- le prochain scan commence par :
+  - src/auth/session.ts
+  - src/api/handlers/patient.ts
+  - ... (24 autres)
+---
+```
+
+Les périmètres de couverture sont résolus depuis la config projet (`karukia/config/coverage-scopes.json`, généré par `install`) ou depuis les globs par défaut du skill. Un audit TypeScript scanne les fichiers `**/*.ts`, un audit CSS scanne `**/*.css` et `**/*.scss`, etc.
+
+---
+
+## Workflow standardisé en 6 étapes (Nouveau en v3.1)
+
+Chaque skill d'audit suit le même workflow structuré :
+
+```
+Étape 0   : PRÉPARATION         -- Créer la session, charger les références
+Étape 0.5 : CHARGEMENT COUVERTURE -- Lire le manifeste précédent, prioriser les fichiers non scannés
+Étape 1   : EXPLORATION          -- Scan multi-agents en parallèle (chaque agent couvre un périmètre)
+Étape 2   : ANALYSE              -- Synthétiser les découvertes, identifier les actions requises
+Étape 3   : EXÉCUTION            -- Exécuter le plan, mettre à jour la progression après chaque action
+Étape 4   : VALIDATION           -- Lint, build, test. Corriger TOUS les problèmes avant clôture
+Étape 4.5 : ÉCRITURE COUVERTURE  -- Écrire le manifeste de couverture pour la prochaine session
+Étape 5   : CLÔTURE              -- Finaliser la session, mettre à jour trackers et base de connaissances
+```
+
+Points clés du workflow :
+- **Règle des 2 actions** : Après chaque 2 opérations de lecture, les findings DOIVENT être écrits dans `findings.md`. Le contexte n'est jamais perdu, même si la session est interrompue.
+- **Protocole des 3 tentatives** : Diagnostiquer et corriger -- approche alternative -- repenser les hypothèses -- escalader à l'utilisateur. Pas de retries aveugles.
+- **Persistance des connaissances** : Les leçons apprises et les patterns réutilisables sont sauvegardés dans `karukia/memory/knowledge/` entre les sessions. La méthodologie s'améliore au fil du temps.
+
+---
+
 ## Exemples d'utilisation
 
 ### Audit sécurité complet
@@ -257,6 +334,12 @@ Ton IA appelle `jeffrey` — devient l'architecte Jeffrey — implémente avec T
 > « karukia viper »
 
 Ton IA appelle `viper` — déploie la méthodologie Brigade avec 16 agents spécialisés sur les phases Reco, Analyse de surface et Exploitation.
+
+### Due diligence technique (Nouveau en v3.1)
+
+> « karukia deep_review »
+
+Ton IA appelle `deep_review` -- déploie une brigade de 6 agents parallèles -- chacun couvre 2 des 12 axes (qualité code, architecture, scalabilité, coûts, sécurité, résilience, tests, DX, perf frontend, conformité réglementaire, patterns IA, maintenabilité). Produit un scorecard avec notes A+ à F par axe, un score global sur 120, et un plan d'action priorisé. À utiliser avant un investissement, une prise de poste CTO, ou un refactor majeur.
 
 ### Tout orchestrer
 
@@ -291,7 +374,7 @@ KARUKIA est né du développement d'un SaaS de santé en cours de préparation p
 
 Le projet est construit autour de trois principes :
 1. **Séparation des responsabilités** — Sécurité, qualité et implémentation sont des disciplines distinctes, portées par des personas IA séparés.
-2. **Points de contrôle formels plutôt qu'intuition** — 1797+ points documentés valent mieux qu'un "je pense que c'est bon".
+2. **Points de contrôle formels plutôt qu'intuition** — 1800+ points documentés valent mieux qu'un "je pense que c'est bon".
 3. **Défense en profondeur** — Audit défensif d'abord, validation qualité ensuite, test offensif en dernier.
 
 > *Made in Guadeloupe — L'IA ne remplace pas l'expert, elle le libère.*
@@ -318,7 +401,7 @@ Si votre entreprise ou ESN utilise KARUKIA en production ou le déploie pour ses
 | **Business** | 12 000 EUR | Jusqu'à 50 développeurs |
 | **Enterprise** | 20 000 EUR | Développeurs illimités + support prioritaire |
 
-Toutes les formules incluent : accès complet aux 26 outils, 19 skills, 1797+ points de contrôle sur 11 dimensions d'audit, et toutes les mises à jour pendant la durée de la licence. Licence annuelle, renouvelable.
+Toutes les formules incluent : accès complet aux 27 outils, 20 skills, 1800+ points de contrôle sur 11 dimensions d'audit, et toutes les mises à jour pendant la durée de la licence. Licence annuelle, renouvelable.
 
 **Contact :** contact@karukia.com
 
@@ -326,4 +409,4 @@ Toutes les formules incluent : accès complet aux 26 outils, 19 skills, 1797+ po
 
 ### Conversion de licence
 
-Le 6 mars 2028, le Logiciel sera automatiquement converti sous [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Le 2 avril 2036, le Logiciel sera automatiquement converti sous [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
